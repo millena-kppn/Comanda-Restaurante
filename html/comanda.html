@@ -3,10 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Comanda</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
+    <h1 id="tituloComanda">Comanda</h1>
+  <form id="formPedido">
+    <input type="text" id="produto" placeholder="Produto" required>
+    <input type="number" id="quantidade" placeholder="Qtd" min="1" required>
+    <button type="submit">Adicionar Pedido</button>
+  </form>
+  <ul id="listaPedidos"></ul>
+<button id="btnEnviar">Enviar para Cozinha</button>
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <p>Pedido enviado com sucesso! ✅</p>
+      <button onclick="fecharModal()">Fechar</button>
+    </div>
+  </div>
   <script src="../js/script.js"></script>
 </body>
 </html>
