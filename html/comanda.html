@@ -1,26 +1,36 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comanda</title>
-    <link rel="stylesheet" href="../css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comanda</title>
+  <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-    <h1 id="tituloComanda">Comanda</h1>
+  <h1 id="tituloComanda">Comanda</h1>
+
   <form id="formPedido">
     <input type="text" id="produto" placeholder="Produto" required>
     <input type="number" id="quantidade" placeholder="Qtd" min="1" required>
     <button type="submit">Adicionar Pedido</button>
   </form>
+
   <ul id="listaPedidos"></ul>
-<button id="btnEnviar">Enviar para Cozinha</button>
+  <button id="btnEnviar">Enviar para Cozinha</button>
+
   <div id="modal" class="modal">
     <div class="modal-content">
       <p>Pedido enviado com sucesso! ✅</p>
       <button onclick="fecharModal()">Fechar</button>
     </div>
   </div>
+
   <script src="../js/script.js"></script>
+  <script>
+    const mesa = localStorage.getItem("mesaAtual") || new URLSearchParams(window.location.search).get("mesa");
+    if (mesa) {
+      document.getElementById("tituloComanda").textContent = `Comanda - Mesa ${mesa}`;
+    }
+  </script>
 </body>
 </html>
