@@ -1,98 +1,84 @@
-// FUNÇÃO PARA ABRIR COMANDA (botões da página inicial)
+// Abre a comanda da mesa clicada
 function abrirComanda(numeroMesa) {
   localStorage.setItem("mesaAtual", numeroMesa);
-  window.location.href = "html/comanda.html?mesa=" + numeroMesa;
+  window.location.href = `comanda.html?mesa=${numeroMesa}`;
 }
-// PÁGINA DE COMANDA
-if (document.getElementById("formPedido")) {
-  const params = new URLSearchParams(window.location.search);
-  const nomeMesa = params.get("mesa") || localStorage.getItem("mesaAtual") || "Mesa Desconhecida";
-  document.getElementById("tituloComanda").textContent = `Comanda - Mesa ${nomeMesa}`;
 
-  const form = document.getElementById("formPedido");
-  const lista = document.getElementById("listaPedidos");
-  const pedidos = [];
-  // Adicionar itens à comanda
+//  Lógica da página Comanda 
+const form = document.getElementById("formPedido");
+const listaPedidos = document.getElementById("listaPedidos");
+const btnEnviar = document.getElementById("btnEnviar");
+
+let pedidos = [];
+
+if (form) {
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const produto = document.getElementById("produto").value.trim();
-    const quantidade = document.getElementById("quantidade").value;
 
-    if (!produto || quantidade <= 0) return;
+    const produto = document.getElementById("produto").value.trim();
+    const quantidade = document.getElementById("quantidade").value.trim();
+
+    if (!produto || !quantidade) return;
 
     pedidos.push({ produto, quantidade });
-    const item = document.createElement("li");
-    item.textContent = `${quantidade}x ${produto}`;
-    lista.appendChild(item);
+    atualizarLista();
     form.reset();
   });
-  // Enviar pedidos para cozinha
-  document.getElementById("btnEnviar").addEventListener("click", () => {
-    if (pedidos.length === 0) {
-      alert("Adicione pelo menos um pedido antes de enviar!");
-      return;
-    }
+}
 
-    const novoPedido = {
-      mesa: nomeMesa,
-      pedidos: pedidos,
-      hora: new Date().toLocaleTimeString(),
-      status: "Em preparo"
-    };
-
-    const pedidosSalvos = JSON.parse(localStorage.getItem("pedidosCozinha") || "[]");
-    pedidosSalvos.push(novoPedido);
-    localStorage.setItem("pedidosCozinha", JSON.stringify(pedidosSalvos));
-
-    abrirModal();
-    lista.innerHTML = "";
-    pedidos.length = 0;
+function atualizarLista() {
+  listaPedidos.innerHTML = "";
+  pedidos.forEach((p, i) => {
+    const li = document.createElement("li");
+    li.textContent = `${p.produto} - ${p.quantidade}x`;
+    listaPedidos.appendChild(li);
   });
 }
-// PÁGINA DA COZINHA
-if (document.getElementById("pedidosContainer")) {
-  const container = document.getElementById("pedidosContainer");
-  const pedidos = JSON.parse(localStorage.getItem("pedidosCozinha") || "[]");
 
-  if (pedidos.length === 0) {
-    container.innerHTML = "<p>Nenhum pedido enviado ainda.</p>";
-  } else {
-    pedidos.forEach((p, i) => {
-      const card = document.createElement("div");
-      card.className = "pedido-card";
-      card.innerHTML = `
-        <h3>🍽️ Mesa: ${p.mesa}</h3>
-        <p><strong>Hora:</strong> ${p.hora}</p>
-        <ul>${p.pedidos.map(item => `<li>${item.quantidade}x ${item.produto}</li>`).join('')}</ul>
-        <p>Status: <strong>${p.status}</strong></p>
-        <button onclick="marcarPronto(${i})" ${p.status === "Pronto" ? "disabled" : ""}>
-          ✅ ${p.status === "Pronto" ? "Pronto" : "Marcar como Pronto"}
-        </button>
-      `;
-      container.appendChild(card);
-    });
-  }
+if (btnEnviar) {
+  btnEnviar.addEventListener("click", () => {
+    const mesa = localStorage.getItem("mesaAtual") || "Sem mesa";
+    const pedidosSalvos = JSON.parse(localStorage.getItem("pedidosCozinha")) || [];
+
+    pedidosSalvos.push({ mesa, pedidos });
+    localStorage.setItem("pedidosCozinha", JSON.stringify(pedidosSalvos));
+
+    pedidos = [];
+    atualizarLista();
+    abrirModal();
+  });
 }
-// Função para marcar pedido como pronto
-function marcarPronto(index) {
-  const pedidos = JSON.parse(localStorage.getItem("pedidosCozinha") || "[]");
-  pedidos[index].status = "Pronto";
-  localStorage.setItem("pedidosCozinha", JSON.stringify(pedidos));
-  window.location.reload();
-}
-// Função para limpar pedidos
-function limparPedidos() {
-  if (confirm("Deseja realmente limpar todos os pedidos?")) {
-    localStorage.removeItem("pedidosCozinha");
-    window.location.reload();
-  }
-}
-// MODAL DE CONFIRMAÇÃO
+
+//  Modal de confirmação 
 function abrirModal() {
-  document.getElementById("modal").style.display = "flex";
+  const modal = document.getElementById("modal");
+  if (modal) modal.style.display = "flex";
 }
+
 function fecharModal() {
-  document.getElementById("modal").style.display = "none";
+  const modal = document.getElementById("modal");
+  if (modal) modal.style.display = "none";
 }
 
+//  Página da Cozinha 
+function carregarPedidos() {
+  const container = document.getElementById("pedidosContainer");
+  if (!container) return;
 
+  const pedidosCozinha = JSON.parse(localStorage.getItem("pedidosCozinha")) || [];
+  container.innerHTML = "";
+
+  pedidosCozinha.forEach((item) => {
+    const div = document.createElement("div");
+    div.classList.add("pedido");
+    div.innerHTML = `<h3>Mesa ${item.mesa}</h3><ul>${item.pedidos.map(p => `<li>${p.produto} - ${p.quantidade}x</li>`).join("")}</ul>`;
+    container.appendChild(div);
+  });
+}
+
+function limparPedidos() {
+  localStorage.removeItem("pedidosCozinha");
+  carregarPedidos();
+}
+
+document.addEventListener("DOMContentLoaded", carregarPedidos);
